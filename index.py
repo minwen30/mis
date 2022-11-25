@@ -17,6 +17,7 @@ def index():
     homepage += "<a href=/account>表單</a><br><br>"
 
     homepage += "<a href=/search>選修課程查詢</a><br>"
+    homepage += "<a href=/movie>電影查詢</a><br>"
     return homepage
 
 @app.route("/mis")
@@ -67,6 +68,28 @@ def search():
         return result
     else:
         return render_template("search.html")
+
+@app.route("/movie", methods=["GET", "POST"])
+def movie():
+    if request.method == "POST":
+        Cond = request.form["keyword"]
+        result = "您輸入的電影關鍵字是：" + Cond
+
+        db = firestore.client()
+        collection_ref = db.collection("捷妤電影")
+        docs = collection_ref.get()
+        result = ""
+        for doc in docs:
+            dict = doc.to_dict()
+            if Cond in dict["title"]:
+                result += "片名:<a href="+ dict["hyperlink"] + ">" + dict["title"] + "</a><br>"
+                result += "電影分級:"+ dict["rate"] + "<br><br>"
+                #result += "電影介紹:"+ dict["hyperlink"] + "<br>"
+        if result =="":
+            result = "抱歉,查無相關條件的電影資訊"
+        return result
+    else:
+        return render_template("movie.html")
 
 #if __name__ == "__main__":
 #    app.run()
